@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
-from cloudapp.tests.framework import TestingFramework
+from framework import TestingFramework
 from warnings import warn
 from flask import current_app
 

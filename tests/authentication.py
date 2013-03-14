@@ -7,9 +7,10 @@ import flask
 from flask import json, g
 
 from cloudapp.api import Envelope
-from cloudapp.tests.framework import TestingFramework, json_content_header, basic_auth_header
 from cloudapp.permissions import valid_user
 from cloudapp.authentication.endpoints import api as AuthAPI
+
+from framework import TestingFramework, json_content_header, basic_auth_header
 
 @AuthAPI.route('/notsosecret')
 def not_so_secret():
