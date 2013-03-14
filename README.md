@@ -28,5 +28,27 @@ Requirements:
 
 Quickstart
 
+Install the System Level Packages
+Example below is for development on an OS X system with Homebrew installed
 
+virtualenv
+sudo easy_install virtualenv
 
+CouchDB
+brew install couchdb
+
+Redis
+brew install redis
+
+virtualenv CloudAppEnv
+[tcsh] source CloudAppEnv/bin/activate.csh
+[bash] . CloudAppEnv/bin/activate
+
+git clone git@github.com:ryanolson/CloudApp.git
+cd CloudApp
+python setup.py develop 
+-or-
+python setup.py install [if you are not going to make changes]
+
+Run tests
+python tests/__init__.py
