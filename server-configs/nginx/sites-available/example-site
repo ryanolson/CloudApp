@@ -1,0 +1,73 @@
+# This is adapted from https://github.com/h5bp/server-configs
+#
+# YOU NEED TO:
+# 1) replace SERVER_NAME
+# 2) replace /path/to/static/files
+#
+# On my MacBookAir, I replace SERVER_NAME with project-name.local
+# and I make sure to have the following set in my /etc/hosts file:
+#
+# 127.0.0.1       project-name.local
+# 127.0.0.1       api.project-name.local
+#
+# We want nginx to handle our static files rather than flask (duh).
+# You may want to sym link the CloudApp/cloudapp/static files to 
+# another directory in which you can also add your own static files.
+# Point nginx at said directory.
+#
+
+server {
+        listen 80;
+        # listen 443 ssl;
+        # ssl_certificate     /path/to/server.crt;
+        # ssl_certificate_key /path/to/server.key;
+
+        # listen on the www host
+        server_name www.SERVER_NAME;
+
+        # and redirect to the non-www host (declared below)
+        return 301 $scheme://example.com$request_uri;
+}
+
+server {
+        listen 80;
+        # listen 443 ssl;
+        # ssl_certificate     /home/ubuntu/nginx/server.crt;
+        # ssl_certificate_key /home/ubuntu/nginx/server.key;
+
+        server_name SERVER_NAME;
+
+        # path to your static directory
+        # on os x, avoid paths with spaces in them
+        location ~ ^/(static|images|javascript|js|css|img|flash|media|static)/  {
+            root /path/to/static/files;
+            expires 30d;
+            access_log off;
+            add_header Cache-Control "public";
+        }
+
+        location = /404.html {
+            root /path/to/static/files;
+            access_log off;
+        }
+
+        location = /favicon.ico {
+            root /path/to/static/files;
+            access_log off;
+        }
+
+        include conf/h5bp.conf;
+
+        location / {
+                proxy_pass http://SERVER_NAME:8080;
+        }
+
+}
+
+server {
+        listen 80;
+        server_name api.SERVER_NAME;
+        location / {
+                proxy_pass http://api.SERVER_NAME:8080;
+        }
+}
