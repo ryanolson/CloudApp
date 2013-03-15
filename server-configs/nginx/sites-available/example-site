@@ -26,7 +26,7 @@ server {
         server_name www.SERVER_NAME;
 
         # and redirect to the non-www host (declared below)
-        return 301 $scheme://example.com$request_uri;
+        return 301 $scheme://SERVER_NAME$request_uri;
 }
 
 server {
