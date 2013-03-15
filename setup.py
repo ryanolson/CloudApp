@@ -8,7 +8,7 @@ from setuptools import setup, find_packages
 setup(
     name='CloudApp',
     version='0.1dev',
-    author='Quantum Coding',
+    author='QuantumCoding',
     author_email='quantumcoding+cloudapp@gmail.com',
     packages=find_packages(exclude=["dependencies"]),
     zip_safe=False,
