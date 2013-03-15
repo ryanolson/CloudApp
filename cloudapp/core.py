@@ -15,11 +15,12 @@ EXTENSION_NAME = 'QCWebApp'
 @public
 class Application(object):
 
-    def __init__(self, user, app=None, documents=[], **kwargs):
+    def __init__(self, user, app=None, documents=[], users=[], **kwargs):
         self.app   = app
         self.user  = user
         self.documents = documents
         self.couch = None
+        self.default_users = users
         if app is not None:
            self.init_app(app)
 
@@ -36,13 +37,9 @@ class Application(object):
         self._init_cache(app)
         self._init_principal(app)
         self._init_blueprints(app)
+        self._init_users(app)
 
         app.extensions[EXTENSION_NAME] = self
-
-        # create default admins
-        with app.app_context():
-             if self.user.load("rmolson@gmail.com",db=self.couch.db) is None:
-                self.user(email="rmolson@gmail.com",password="test1234",roles=['Admin']).store(self.couch.db)
 
     @classmethod
     def flask(cls, name, config=None, debug=False, **kwargs):
@@ -100,6 +97,12 @@ class Application(object):
         from cloudapp.authentication import authWWW
         app.register_blueprint(authAPI)
         app.register_blueprint(authWWW)
+
+    def _init_users(self, app):
+        with app.app_context():
+           for user in self.default_users:
+             if self.user.load(user[0],db=self.couch.db) is None:
+                self.user(email=user[0],password=user[1],roles=user[2]).store(self.couch.db)
 
     def _before_request(self):
         g.User = self.user

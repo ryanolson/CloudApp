@@ -23,7 +23,7 @@ public(public)  # Emulate decorating ourself
 ##
 # 
 
-from .core import Application
+from .core import Application, Blueprint
 from .authentication import BaseUser
 
-__all__ = ['Application', 'BaseUser']
+__all__ = ['Application', 'Blueprint', 'BaseUser']
