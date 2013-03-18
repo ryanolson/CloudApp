@@ -31,23 +31,22 @@ class Application(object):
         cloudapp = app.extensions.get(EXTENSION_NAME, None)
         if cloudapp is not None:
            raise RuntimeError('Multiple Flask-WebApplications loaded')
-       
+      
         Bootstrap(app)
+
+        # i don't like that i have to do this here
         auth = Blueprint('cloudapp',
                           __name__,
                           template_folder='templates',
                           static_folder='static',
                           url_prefix='/cloudapp')
-
         from .authentication.views import login as alogin, logout as alogout
         @auth.route('/login', methods=['POST','GET'])
         def login():
             return alogin()
-
         @auth.route('/logout')
         def logout():
             return alogout()
-
         app.register_blueprint(auth)
 
         app.before_request(self._before_request)
