@@ -9,7 +9,6 @@ from cloudapp.permissions import valid_user
 from cloudapp.authentication.models import Session
 
 def _load_user(user_id, identity):
-    print "loading {}".format(user_id)
     user = g.User.load(user_id)
     if user:
        identity.user = user

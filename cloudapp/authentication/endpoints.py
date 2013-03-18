@@ -11,7 +11,7 @@ from .decorators import requires_login
 #rom cloudapp.authentication.models import Session
 from .models import Session
 
-api = Blueprint('api_auth', url_prefix='/auth' )
+api = Blueprint('cloudapp_api', url_prefix='/auth' )
 
 @api.route('/login',methods=['POST'])
 @requires_login

@@ -9,7 +9,7 @@ def Blueprint(name, **kwargs):
     from cloudapp.authentication.decorators import load_user
     error_if_exists = kwargs.pop('subdomain', None)
     if error_if_exists:
-       raise RuntimeError("[api] Blueprint: subdomain is not an allowed keyword")
+       raise RuntimeError("[cloudapp_api] Blueprint: subdomain is not an allowed keyword")
     bp = Blueprint(name, __name__, subdomain="api", **kwargs)
     bp.before_request(load_user)
     for code in default_exceptions.iterkeys():

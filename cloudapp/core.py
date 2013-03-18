@@ -134,7 +134,7 @@ class Application(object):
 def Blueprint(name, **kwargs):
     error_if_exists = kwargs.pop('template_folder', None)
     if error_if_exists:
-       raise RuntimeError("[error] QCBlueprint: template_folder is not an allowed keyword")
+       raise RuntimeError("[cloudapp] Blueprint: template_folder is not an allowed keyword")
     from flask import Blueprint
     return Blueprint(name, __name__, template_folder='templates', **kwargs)
 
