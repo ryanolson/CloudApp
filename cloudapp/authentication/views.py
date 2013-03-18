@@ -6,7 +6,7 @@ from flask.ext.couchdb import Model, StringType, EmailType
 from flask.ext.principal import Identity, identity_changed
 from schematics.wtf import model_form
 
-www = Blueprint('www_auth', __name__, url_prefix='/auth')
+www = Blueprint('cloudapp', __name__, url_prefix='/auth')
 
 
 

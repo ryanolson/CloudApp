@@ -23,7 +23,9 @@
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
 
+        {% block header %}{% endblock %}
         {% block body %}{% endblock %}
+        {% block footer %}{% endblock %}
 
         {% if local_jquery %}
         <script src="/js/vendor/jquery-1.9.1.min.js"></script>
@@ -36,8 +38,8 @@
         {% block script %}{% endblock %}
         <script src="/js/plugins.js"></script>
 
-        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
         {% if google_analytics_id %}
+        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
         <script>
             var _gaq=[['_setAccount','{{ google_analytics_id }}'],['_trackPageview']];
             (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
