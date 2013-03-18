@@ -14,7 +14,7 @@
     <div class="container">
     {% if form %}
     <div class="container">
-      <form class="form-signin" action='/auth/login' method='POST'>
+      <form class="form-signin" action="{{ url_for('cloudapp.login') }}" method='POST'>
         <h2 class="form-signin-heading">Please sign in</h2>
         {{ form.hidden_tag() }}
         {{ render_field(form.email, class="input-block-level", placeholder="Email address") }}

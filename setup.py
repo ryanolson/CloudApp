@@ -17,6 +17,7 @@ setup(
         'Flask',
         'Flask-Principal',
         'Flask-WTF',
+        'Flask-Bootstrap',
         'Flask-CouchDB>=2.0.0dev',
         'couchdb-python>=2.0.0dev',
         'schematics>=2.0.0dev',

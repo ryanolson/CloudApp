@@ -6,7 +6,6 @@ from flask.ext.couchdb import Model, StringType, EmailType
 from flask.ext.principal import Identity, identity_changed
 from schematics.wtf import model_form
 
-auth = Blueprint('cloudapp', __name__, url_prefix='/auth')
 
 def is_safe_url(target):
     ref_url = urlparse(request.host_url)
@@ -64,7 +63,7 @@ class LoginForm(BaseLoginForm):
         identity_changed.send(current_app._get_current_object(), identity=Identity(user.id, auth_type='web-token'))
         return True
 
-@auth.route('/login', methods=['POST','GET'])
+#@auth.route('/login', methods=['POST','GET'])
 def login():
     login_form = LoginForm()
     if login_form.validate_on_submit():
@@ -72,7 +71,7 @@ def login():
        return login_form.redirect("www.index")
     return render_template("signin.html", form=login_form)
 
-@auth.route('/logout')
+#@auth.route('/logout')
 def logout():
     from .models import logout as models_logout
     models_logout()

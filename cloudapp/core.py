@@ -8,9 +8,10 @@ tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 from cloudapp import public
 from datetime import timedelta
 
-from flask import Flask, g
+from flask import Flask, Blueprint, g
+from flask.ext.bootstrap import Bootstrap
 
-EXTENSION_NAME = 'QCWebApp'
+EXTENSION_NAME = 'cloudapp'
 
 @public
 class Application(object):
@@ -27,10 +28,28 @@ class Application(object):
     def init_app(self, app):
         if not hasattr(app, 'extensions'):
            app.extensions = dict()
-        webapp = app.extensions.get(EXTENSION_NAME, None)
-        if webapp is not None:
+        cloudapp = app.extensions.get(EXTENSION_NAME, None)
+        if cloudapp is not None:
            raise RuntimeError('Multiple Flask-WebApplications loaded')
-        
+       
+        Bootstrap(app)
+        auth = Blueprint('cloudapp',
+                          __name__,
+                          template_folder='templates',
+                          static_folder='static',
+                          url_prefix='/cloudapp')
+
+        from .authentication.views import login as alogin, logout as alogout
+        @auth.route('/login', methods=['POST','GET'])
+        def login():
+            return alogin()
+
+        @auth.route('/logout')
+        def logout():
+            return alogout()
+
+        app.register_blueprint(auth)
+
         app.before_request(self._before_request)
 
         self._init_couch(app)
@@ -94,9 +113,7 @@ class Application(object):
 
     def _init_blueprints(self, app):
         from cloudapp.authentication import authAPI
-        from cloudapp.authentication import authWWW
         app.register_blueprint(authAPI)
-        app.register_blueprint(authWWW)
 
     def _init_users(self, app):
         with app.app_context():
@@ -106,35 +123,4 @@ class Application(object):
 
     def _before_request(self):
         g.User = self.user
-
-#   def setupFlaskAdmin(self):
-#       from flask.ext.admin import Admin
-#       admin = Admin(self.app, name=self.name)
-#       from cloudapp.users.admin.views import Users
-#       admin.add_view(Users(name='Users'))
-#       if self.app.debug:
-#          from cloudapp.views.test import Test
-#          admin.add_view(Test())
-#       self.admin = admin
-
-
-#   def register_blueprints(self):
-#       if self.app.debug:
-#          from cloudapp.api.test_endpoints import api as testAPI
-#          self.app.register_blueprint(testAPI)
-#          from cloudapp.views.test import www as testWWW
-#          self.app.register_blueprint(testWWW)
-#       from cloudapp.authentication.t import Authentication
-#       self.auth = Authentication(self.user, app=self.app, url_prefix='/oauth')
-#       from cloudapp.authentication.endpoints import api as authAPI
-#       self.app.register_blueprint(authAPI, url_prefix='/oauth')
-
-
-@public
-def Blueprint(name, **kwargs):
-    error_if_exists = kwargs.pop('template_folder', None)
-    if error_if_exists:
-       raise RuntimeError("[cloudapp] Blueprint: template_folder is not an allowed keyword")
-    from flask import Blueprint
-    return Blueprint(name, __name__, template_folder='templates', **kwargs)
 
