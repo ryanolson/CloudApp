@@ -31,7 +31,8 @@ class Application(object):
         cloudapp = app.extensions.get(EXTENSION_NAME, None)
         if cloudapp is not None:
            raise RuntimeError('Multiple Flask-WebApplications loaded')
-      
+
+        app.config['BOOTSTRAP_FONTAWESOME'] = True
 
         app.before_request(self._before_request)
 
