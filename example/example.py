@@ -13,7 +13,7 @@ class User(BaseUser):
 
 # inherit cloudapp's debug config
 class Config(DebugConfig):
-    SERVER_NAME = 'example.local:8080'
+    SERVER_NAME = 'example.dev:8080'
     SECRET_KEY  = 'generate-me'
 
 #

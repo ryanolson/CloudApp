@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re, string, datetime
 from cloudapp import public
-from flask import current_app
+from flask import current_app, g
 from flask.ext.couchdb import *
 
 """
@@ -143,11 +143,23 @@ class BaseUser(Document):
 
 @public
 def validate_token(token):
-     if token is None: return False
-     if current_app.cache is not None:
-        if current_app.cache.get(token) is not None:
-           return True 
-     auth_session = Session.load(token)
-     if auth_session:
-        return True
-     return False
+    if token is None: return False
+    if current_app.cache is not None:
+       if current_app.cache.get(token) is not None:
+          return True 
+    auth_session = Session.load(token)
+    if auth_session:
+       return True
+    return False
+
+
+@public
+def logout():
+    assert g.identity
+    if current_app.cache is not None:
+       current_app.cache.delete(g.identity.name)
+    g.identity = AnonymousIdentity()
+    session.pop('identity.name', None)
+    session.pop('identity.auth_type', None)
+    session.modified = True
+
