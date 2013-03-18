@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-from cloudapp import Application, BaseUser, Blueprint
+from cloudapp import Application, BaseUser
 from cloudapp.config import DebugConfig
 from cloudapp.permissions import valid_user
-from flask import request, redirect, render_template, g, url_for
+from flask import Blueprint, request, redirect, render_template, g, url_for
 
 # you need to create a www blueprint
-www = Blueprint("www")
+www = Blueprint("www", __name__)
 
 # you need to create a User calls from BaseUser
 class User(BaseUser):
@@ -13,7 +13,7 @@ class User(BaseUser):
 
 # inherit cloudapp's debug config
 class Config(DebugConfig):
-    SERVER_NAME = 'example.dev:8080'
+    SERVER_NAME = 'example.dev:5000'
     SECRET_KEY  = 'generate-me'
 
 #
@@ -61,4 +61,4 @@ if __name__ == '__main__':
    users = [ ('admin@example.com','admin1234',['Admin']),
              ('test1@example.com','test1234',[]) ]
    Example = init_example(users=users)
-   Example.app.run(port=8080)
+   Example.app.run(port=5000)
