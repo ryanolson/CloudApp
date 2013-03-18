@@ -76,4 +76,4 @@ def login():
 def logout():
     from .models import logout as models_logout
     models_logout()
-    return render_template(url_for('www.index'))
+    return redirect(url_for('www.index'))

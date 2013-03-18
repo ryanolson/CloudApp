@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 import re, string, datetime
 from cloudapp import public
-from flask import current_app, g
+from flask import current_app, g, session
 from flask.ext.couchdb import *
+from flask.ext.principal import AnonymousIdentity
 
 """
 BaseUser is the base class for a more general User class.  BaseUser
