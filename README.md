@@ -7,13 +7,15 @@ CloudApp provides an extendable user authentication and management (in-progress)
 system.  Users will be able to login via an app specific cloud account or via
 Facebook Authentication (in-progress), or eventually via Open-ID (in-planning).
 
-CloudApp leverages the html5-boilerplate with Twitter's bootstrap for its
-default layout.  Also included are bootstrap-based date and time pickers.
+CloudApp leverages the Twitter's bootstrap and h5bp layout via Flask-Bootstrap
+(https://github.com/mbr/flask-bootstrap).  Also included are bootstrap-based 
+date and time pickers.
 
 Requirements:
 
 - Python
   * Flask
+  * Flask-Bootstrap
   * Flask-CouchDB (ryanolson/Flask-CouchDB)
   * Flask-Principal
   * Flask-WTForms
