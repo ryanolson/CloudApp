@@ -74,6 +74,7 @@ class BaseUser(Document):
     roles = ListType(StringType())
     email_verified = BooleanType(default=False)
     _password = MD5Type(required=True,print_name="password")
+    fb_token = StringType()
 
     class Options:
         roles = {

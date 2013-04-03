@@ -16,7 +16,7 @@ api = Blueprint('cloudapp_api', url_prefix='/auth' )
 @api.route('/login',methods=['POST'])
 @requires_login
 def login():
-    return _create_new_session( g.user )
+    return _get_or_creat_api_key( g.user )
 
 @api.route('/signup', methods=['POST'])
 def signup():
@@ -27,7 +27,7 @@ def signup():
     user = g.User.wrap(request.json['user'])
     try:    
        user.store()
-       return _create_new_session( user )
+       return get_or_creat_api_key( user )
     except:
        abort(400)
 
@@ -47,9 +47,7 @@ def logout():
 def getTokens():
     abort(400)
 
-def _create_new_session(user):
-    # todo - remove any expired tokens
-    # todo - parse current tokens for matching device_info
+def get_or_creat_api_key(user):
     if request.json is None: abort(400)
     if 'device_info' not in request.json: abort(400)
     device_info = request.json['device_info']

@@ -32,6 +32,7 @@ class Application(object):
         if cloudapp is not None:
            raise RuntimeError('Multiple Flask-WebApplications loaded')
 
+        # initialize config defaults
         app.config['BOOTSTRAP_FONTAWESOME'] = True
 
         app.before_request(self._before_request)
