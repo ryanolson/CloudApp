@@ -22,9 +22,10 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                <img src={{ user.gravatar_url(size=18) }}> {{ user.email }} <b class="caret"></b></a>
               <ul class="dropdown-menu">
-               <li>
-                <a href="{{ url_for("cloudapp.logout") }}" class="navbar-link">Log Out</a>
-               </li>
+               <li><a href="{{ url_for("www.profile") }}">Profile Page</a></li>
+               <li><a href="#">Account Settings</a></li>
+               <li class="divider"></li>
+               <li><a href="{{ url_for("cloudapp.logout") }}">Log Out</a></li>
               </ul>
              </li>
             {%- else %}
