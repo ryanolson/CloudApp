@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import re, string, datetime
+import re, string, datetime, urllib, hashlib
 from cloudapp import public
 from flask import current_app, g, session
 from flask.ext.couchdb import *
@@ -121,6 +121,13 @@ class BaseUser(Document):
               raise RuntimeError("failed to create an authentication session")
            return str(session.token)
         return None
+
+    def gravatar_url(self,size=40,default=None):
+        if default is None:
+           default = 'mm'
+        gravatar_url = "http://www.gravatar.com/avatar/" + hashlib.md5(self.email.lower()).hexdigest() + "?"
+        gravatar_url += urllib.urlencode({'d':default, 's':str(size)})
+        return gravatar_url
 
 #   def remove_session(self, token):
 #       for s in range(len(self.sessions)):
