@@ -36,10 +36,14 @@ def index():
 def profile():
     return render_template('profile.html', user=g.identity.user)
 
+@www.route('/settings')
+@valid_user.require(http_exception=403)
+def settings():
+    return render_template('settings/profile.html', user=g.identity.user)
+
 @www.errorhandler(403)
 def permission_denied(err_code):
     return redirect( url_for('cloudapp.login') )
-
 
 @api.route('/echo', methods=['PUT','POST'])
 def echo():
