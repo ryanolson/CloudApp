@@ -1,0 +1,53 @@
+{#  
+    Good reading material:
+    Async Forms (https://gist.github.com/havvg/3226804)
+#}
+{%- from "cloudapp/macros/forms.html" import input %}
+{%- from "cloudapp/macros/modal.html" import modal_dialog %}
+{%- from "cloudapp/macros/alert.html" import flash_messages %}
+{%- macro modal_address(address, endpoint) %}
+    {%- call modal_dialog("edit-address", "Edit Address") %}
+        {{ address_form(address, endpoint) }}
+    {%- endcall %}
+{%- endmacro %}
+{# TODO 
+   * embed redirect and object/path data for general address
+   * for async forms - we need to update the main page with the formatted address
+#}
+{%- macro editable_address(address) %}
+    <div class="wb-editable">
+    <a href="#edit-address" data-toggle="modal" class="btn pull-right"><i class="icon-pencil"></i></a>
+    {%- if address %}
+     <address>
+      {{address.address}}<br>
+      {{address.city}}, {{address.state}} {{address.zipcode}}
+     </address>
+    {%- else %}
+     <p class="text-warning">No Address</p>
+    {%- endif %}
+    </div>
+{%- endmacro %}
+{%- macro address_form(address, endpoint, async=False) %}
+    <form class="form-horizontal well" id="modal-address-form" {{ "data-async" if async }} data-target="#modal-address-form" method="POST" action="{{endpoint}}">
+      <fieldset>
+       {%- if address %}
+        {{ input( "Address", "address", address.address) }}
+        {{ input( "City", "city", address.city ) }}
+        {{ input( "State", "state", address.state ) }}
+        {{ input( "Zip", "zipcode", address.zipcode ) }}
+       {%- else %}
+        {{ input( "Address", "address", "" ) }}
+        {{ input( "City", "city", "" ) }}
+        {{ input( "State", "state", "" ) }}
+        {{ input( "Zip", "zipcode", "" ) }}
+       {%- endif %}
+       <div class="control-group">
+        <div class="controls">
+         <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+       </div>
+      </fieldset>
+    </form>
+{%- endmacro %}
+{{ flash_messages() }}
+{{ address_form(address, endpoint) }}

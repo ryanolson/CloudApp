@@ -1,0 +1,8 @@
+{%- macro input(label, field, value, alert) %}
+    <div class="control-group">
+     <label class="control-label" for="{{field}}">{{label}}</label>
+     <div class="controls">
+       <input type="text" name="{{field}}" placeholder="{{label}}" value="{{value|default("")}}">
+     </div>
+    </div>
+{%- endmacro %}
