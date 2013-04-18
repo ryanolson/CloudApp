@@ -17,7 +17,7 @@
       <form class="form-signin" action="{{ url_for('cloudapp.login') }}" method='POST'>
         <h2 class="form-signin-heading">Please sign in</h2>
         {{ form.hidden_tag() }}
-        {{ render_field(form.email, class="input-block-level", placeholder="Email address") }}
+        {{ render_field(form.email, class="input-block-level", placeholder="Email address", autocomplete="off") }}
         {{ render_field(form.password, class="input-block-level", placeholder="Password") }}
         <button class="btn btn-large btn-block btn-primary" type="submit">Sign in</button>
       </form>
