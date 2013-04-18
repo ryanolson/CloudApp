@@ -28,7 +28,7 @@ tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 from cloudapp import public
 from datetime import timedelta
 
-from flask import Flask, Blueprint, g
+from flask import Flask, Blueprint, g, render_template as flask_render_template
 from flask.ext.bootstrap import Bootstrap
 
 EXTENSION_NAME = 'cloudapp'
@@ -143,3 +143,8 @@ class Application(object):
     def _before_request(self):
         g.User = self.user
 
+@public
+def render_template(template_name, **kwargs):
+    user = getattr(g.identity, "user", None)
+    kwargs['user'] = user
+    return flask_render_template(template_name, **kwargs)
