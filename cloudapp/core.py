@@ -137,8 +137,12 @@ class Application(object):
     def _init_users(self, app):
         with app.app_context():
            for user in self.default_users:
-             if self.user.load(user[0],db=self.couch.db) is None:
-                self.user(email=user[0],password=user[1],roles=user[2]).store(self.couch.db)
+             if type(user) == dict:
+                if self.user.load(user['email'], db=self.couch.db) is None:
+                   self.user(**user).store(db=self.couch.db)
+             else:      
+                if self.user.load(user[0],db=self.couch.db) is None:
+                   self.user(email=user[0],password=user[1],roles=user[2]).store(self.couch.db)
 
     def _before_request(self):
         g.User = self.user
