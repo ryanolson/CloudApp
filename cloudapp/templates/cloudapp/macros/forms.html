@@ -1,8 +1,25 @@
-{%- macro input(label, field, value, alert) %}
+{%- macro control_group(label, field) %}
     <div class="control-group">
      <label class="control-label" for="{{field}}">{{label}}</label>
      <div class="controls">
+      {{ caller() }}
+     </div>
+    </div>
+{%- endmacro %}
+{%- macro input(label, field, value, alert) %}
+    {% call control_group(label, field) %}
        <input type="text" name="{{field}}" placeholder="{{label}}" value="{{value|default("")}}">
+    {% endcall %}
+{%- endmacro %}
+{%- macro textarea(label, field, value="", placeholder="", rows=2, alert=None) %}
+    {% call control_group(label, field) %}
+       <textarea name="{{field}}" placeholder="{{placeholder}}" rows="{{rows}}">{{ value }}</textarea>
+    {% endcall %}
+{%- endmacro %}
+{%- macro submit_btn(title="Submit") %}
+    <div class="control-group">
+     <div class="controls">
+      <button type="submit" class="btn btn-primary">{{title}}</button>
      </div>
     </div>
 {%- endmacro %}
