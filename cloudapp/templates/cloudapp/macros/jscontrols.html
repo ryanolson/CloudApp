@@ -1,0 +1,15 @@
+{% macro slider(id, class=None, min=0, max=10, step=1, value=0, tooltip="hide", handle="triangle") %}
+<input type="text" class="{{ class if class }}" data-slider-min="{{min}}" data-slider-max="{{max}}" data-slider-step="{{step}}" data-slider-value="{{value}}" data-slider-id="{{id}}_slider" id="{{id}}" data-slider-tooltip="{{tooltip}}" data-slider-handle="{{handle}}">
+{% endmacro %}
+{% macro accordion_group(title, parent, id) %}
+   <div class="accordion-group">
+    <div class="accordion-heading">
+     <a class="accordion-toggle" data-toggle="collapse" data-parent="#{{parent}}" href="#{{parent}}_{{id}}">{{title}}</a>
+    </div><!-- /accordion-heading -->
+    <div class="accordion-body collapse" id="{{parent}}_{{id}}">
+     <div class="accordion-inner">
+      {{ caller() }}
+     </div><!-- /accordion-inner -->
+    </div><!-- /accordion-body -->
+   </div><!-- /accordion-group -->
+{% endmacro %}
