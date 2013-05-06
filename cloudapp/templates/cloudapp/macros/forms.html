@@ -8,7 +8,7 @@
 {%- endmacro %}
 {%- macro input(label, field, value, alert) %}
     {% call control_group(label, field) %}
-       <input type="text" name="{{field}}" placeholder="{{label}}" value="{{value|default("")}}">
+       <input type="text" name="{{field}}" placeholder="{{label}}" value="{{value|default("")}}" autocomplete="off">
     {% endcall %}
 {%- endmacro %}
 {%- macro textarea(label, field, value="", placeholder="", rows=2, alert=None) %}
