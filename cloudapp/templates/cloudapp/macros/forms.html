@@ -11,9 +11,9 @@
        <input type="text" name="{{field}}" placeholder="{{label}}" value="{{value|default("")}}" autocomplete="off">
     {% endcall %}
 {%- endmacro %}
-{%- macro textarea(label, field, value="", placeholder="", rows=2, alert=None) %}
+{%- macro textarea(label, field, value="", placeholder="", rows=2, alert=None, readonly=False) %}
     {% call control_group(label, field) %}
-       <textarea name="{{field}}" placeholder="{{placeholder}}" rows="{{rows}}">{{ value }}</textarea>
+       <textarea name="{{field}}" placeholder="{{placeholder}}" rows="{{rows}}" {{"readonly" if readonly}}>{{ value }}</textarea>
     {% endcall %}
 {%- endmacro %}
 {%- macro submit_btn(title="Submit") %}
