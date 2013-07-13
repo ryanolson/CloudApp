@@ -51,10 +51,10 @@ def signup():
 @api.route('/logout')
 @valid_user.require(http_exception=403)
 def logout():
-    session = Session.load( g.identity.name )
+    session = Session.load( g.identity.id )
     g.couch.db.delete( session )
     if current_app.cache is not None:
-       current_app.cache.delete( g.identity.name )
+       current_app.cache.delete( g.identity.id )
     g.user = None
     identity_changed.send(current_app._get_current_object(), identity=AnonymousIdentity())
     return Envelope(200).send()

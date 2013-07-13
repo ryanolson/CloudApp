@@ -192,9 +192,9 @@ def validate_token(token):
 def logout():
     assert g.identity
     if current_app.cache is not None:
-       current_app.cache.delete(g.identity.name)
+       current_app.cache.delete(g.identity.id)
     g.identity = AnonymousIdentity()
-    session.pop('identity.name', None)
+    session.pop('identity.id', None)
     session.pop('identity.auth_type', None)
     session.modified = True
 

@@ -29,7 +29,9 @@ def Blueprint(name, **kwargs):
     error_if_exists = kwargs.pop('subdomain', None)
     if error_if_exists:
        raise RuntimeError("[cloudapp_api] Blueprint: subdomain is not an allowed keyword")
-    bp = Blueprint(name, __name__, subdomain="api", **kwargs)
+    url_prefix = kwargs.get('url_prefix', '')
+    kwargs['url_prefix'] = '/api/v1' + url_prefix
+    bp = Blueprint(name, __name__, **kwargs)
     bp.before_request(load_user)
     bp.before_request(_process_request_json)
     for code in default_exceptions.iterkeys():
@@ -43,12 +45,13 @@ def Blueprint(name, **kwargs):
 def _process_request_json():
     from flask import request, json, g
     g.json = None
-    try:
-       g.json = json.loads(request.data)
-    except:
-       env = Envelope(400)
-       env.add_meta('error_message','expected a valid json')
-       return env.send()
+    if request.data:
+       try:
+          g.json = json.loads(request.data)
+       except:
+          env = Envelope(400)
+          env.add_meta('error_message','expected a valid json')
+          return env.send()
 
 def _json_errorhandler(ex):
     from flask import jsonify

@@ -117,19 +117,19 @@ class CloudApp(object):
 
     def _init_blueprints(self, app):
         Bootstrap(app)
-        auth = Blueprint('cloudapp',
+        cloudapp = Blueprint('cloudapp',
                           __name__,
                           template_folder='templates',
                           static_folder='static',
                           url_prefix='/cloudapp')
-        from .authentication.views import login as alogin, logout as alogout
-        @auth.route('/login', methods=['POST','GET'])
+        from .authentication.views import login as cloudapp_login, logout as cloudapp_logout
+        @cloudapp.route('/login', methods=['POST','GET'])
         def login():
-            return alogin()
-        @auth.route('/logout')
+            return cloudapp_login()
+        @cloudapp.route('/logout')
         def logout():
-            return alogout()
-        app.register_blueprint(auth)
+            return cloudapp_logout()
+        app.register_blueprint(cloudapp)
         from cloudapp.authentication import authAPI
         app.register_blueprint(authAPI)
 

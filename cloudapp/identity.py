@@ -40,7 +40,7 @@ def _cache_identity(identity):
     if current_app.cache is None: return
     cached_identity = copy(identity)
     cached_identity.user = identity.user.serialize()
-    current_app.cache.set(identity.name, cached_identity, timeout=600)
+    current_app.cache.set(identity.id, cached_identity, timeout=600)
 
 
 def on_load_identity(sender, identity):
@@ -57,7 +57,7 @@ def on_load_identity(sender, identity):
      memcache for the storage of the user's base information.
     """
     if current_app.cache is not None:
-       stored_identity = current_app.cache.get(identity.name)
+       stored_identity = current_app.cache.get(identity.id)
        if stored_identity is not None:
           identity.user = g.User.wrap(stored_identity.user)
           identity.provides = stored_identity.provides
@@ -65,10 +65,10 @@ def on_load_identity(sender, identity):
           return
     try:
        if identity.auth_type == 'web-token':
-          _load_user(identity.name, identity)
+          _load_user(identity.id, identity)
           _cache_identity(identity)
        elif identity.auth_type == 'token':
-          auth_session = Session.load(identity.name)
+          auth_session = Session.load(identity.id)
           if auth_session:
              _load_user(auth_session.user_id, identity)
              _cache_identity(identity)
@@ -76,6 +76,6 @@ def on_load_identity(sender, identity):
              if current_app.testing: session['loaded_from']='couchdb'
     except:
        g.identity = AnonymousIdentity()
-       session.pop('identity.name',None)
+       session.pop('identity.id',None)
        session.pop('identity.auth_type', None)
        session.modified = True
