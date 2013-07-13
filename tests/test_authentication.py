@@ -81,39 +81,39 @@ class AuthenticationTests(TestingFramework):
     def testCreateAccountWithRequiredFieldsMissing(self):
         user=dict(first_name="Matt", last_name="Coyle", password="never")
         data=dict(user=user, device_info=self.device_info)
-        rv = self.testclient.post('/auth/signup', base_url=self.base_url, content_type='application/json', data=json.dumps(data))
+        rv = self.testclient.post('/api/v1/auth/signup', content_type='application/json', data=json.dumps(data))
         assert '400' in rv.data
 
     def testValidLoginAndPermanentSession(self):
         self.setupUserAccounts()
         data = self.device_info
-        rv = self.testclient.post('/auth/login', base_url=self.base_url, content_type='application/json', 
+        rv = self.testclient.post('/api/v1/auth/login', content_type='application/json', 
                   data=json.dumps(data), headers=[basic_auth_header("thesis@finish.it", "never")])
         assert 'token' in rv.data
         assert '201' in rv.data
         assert 'set-cookie' in rv.headers
         match = re.search(r'\bexpires=([^;]+)', rv.headers['set-cookie'])
         assert match is not None
-        rv = self.testclient.get('/api/v1/auth/supersecret', base_url=self.base_url)
+        rv = self.testclient.get('/api/v1/auth/supersecret')
         self.assertIn('secret', rv.data)
 
     def testValidLoginWithoutDeviceInfo(self):
         self.setupUserAccounts()
         data = None
-        rv = self.testclient.post('/auth/login', base_url=self.base_url, content_type='application/json', 
+        rv = self.testclient.post('/api/v1/auth/login', content_type='application/json', 
                   data=json.dumps(data), headers=[basic_auth_header("thesis@finish.it", "never")])
         assert '400' in rv.data
 
     def testInvalidLoginWithIncorrectPassword(self):
         self.setupUserAccounts()
-        rv = self.testclient.post('/auth/login', 
+        rv = self.testclient.post('/api/v1/auth/login', 
                   data=dict(device_info="flask.test_client"),
                   headers=[json_content_header, basic_auth_header("thesis@finish.it", "done")])
         assert '401' in rv.data
 
     def testInvalidLoginWithInvalidUsername(self):
         self.setupUserAccounts()
-        rv = self.testclient.post('/auth/login', base_url=self.base_url,
+        rv = self.testclient.post('/api/v1/auth/login', 
                   data=dict(device_info="flask.test_client"),
                   headers=[json_content_header, basic_auth_header("thesis.coyle@finish.it", "done")])
         assert '401' in rv.data
@@ -158,11 +158,3 @@ class AuthenticationTests(TestingFramework):
         rv = self.testclient.get('/api/v1/auth/notsosecret', base_url=self.base_url)
         assert 'set-cookie' not in rv.headers
         
-
-def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(AuthenticationTests, 'test'))
-    return suite
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='suite')

@@ -33,7 +33,7 @@ api = Blueprint('cloudapp_api', url_prefix='/auth' )
 @api.route('/login',methods=['POST'])
 @requires_login
 def login():
-    return _get_or_creat_api_key( g.user )
+    return get_or_creat_api_key( g.user )
 
 @api.route('/signup', methods=['POST'])
 def signup():
@@ -41,8 +41,8 @@ def signup():
     if 'user' not in request.json: abort(400)
     if 'email_verified' in request.json['user']:
        del request.json['user']['email_verified']
-    user = g.User.wrap(request.json['user'])
     try:    
+       user = g.User.wrap(request.json['user'])
        user.store()
        return get_or_creat_api_key( user )
     except:
