@@ -23,7 +23,7 @@ public(public)  # Emulate decorating ourself
 ##
 # 
 
-from .core import Application, render_template
+from .core import CloudApp, render_template
 from .authentication import BaseUser
 
-__all__ = ['Application', 'BaseUser', 'render_template']
+__all__ = ['CloudApp', 'BaseUser', 'render_template']

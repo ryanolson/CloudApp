@@ -21,9 +21,14 @@ along with CloudApp.  If not, see <http://www.gnu.org/licenses/>.
 import re, string, datetime, urllib, hashlib
 from cloudapp import public
 from flask import current_app, g, session
-from flask.ext.couchdb import *
 from flask.ext.principal import AnonymousIdentity
 
+from flask.ext.couchdb import ViewDefinition
+from flask.ext.couchdb.schematics_document import Document
+
+from schematics.types import StringType, DateTimeType, UUIDType, EmailType, MD5Type, BooleanType
+from schematics.types.compound import ListType, DictType
+from schematics.serialize import blacklist, whitelist
 """
 BaseUser is the base class for a more general User class.  BaseUser
 is designed to encapsulate all the basic authentication for the
@@ -40,7 +45,7 @@ BaseUser also has a "hidden" field in _password.  The password
 property uses the _get_password and _set_password for a getter/setter.
 The setter automatically hashes the value passed with a salted string.
 CouchDB will not let us save a field with the name "_password", 
-(CouchDB reserves _'ed attributes), so we use the "print_name" feature
+(CouchDB reserves _'ed attributes), so we use the "serialized_name" feature
 so that the value of the _password field will be serialized to "password"
 with any of the schematics.serialize routines.
 
@@ -50,13 +55,12 @@ __init__ that ignores the "password" keyword if "_rev" is present.
 
 """
 
-gmail = re.compile('[%s]' % re.escape(string.punctuation))
- 
 def _remove_dots_from_gmail_username(email):
+    gmail_regex = re.compile('[%s]' % re.escape(string.punctuation))
     rv = email
     if "@gmail.com" in rv:
        username = rv.split('@')[0]
-       username = gmail.sub('',username)
+       username = gmail_regex.sub('',username)
        rv = "{0}@gmail.com".format(username)
     return rv
 
@@ -65,8 +69,9 @@ class Session(Document):
     user_id = StringType(required=True)
     auth_type = StringType(choices=['web-token','api-token','facebook','google'])
     created_on = DateTimeType(default=datetime.datetime.utcnow)
-    device_info = DictType(default=None)
+    device_info = DictType(StringType)
     class Options:
+       serialize_when_none = False
        roles = {
           'mysessions': blacklist('token')
        }
@@ -92,10 +97,11 @@ class BaseUser(Document):
     first_name = StringType()
     roles = ListType(StringType())
     email_verified = BooleanType(default=False)
-    _password = MD5Type(required=True,print_name="password")
+    _password = MD5Type(required=True,serialized_name="password")
     fb_token = StringType()
 
     class Options:
+        serialize_when_none = False
         roles = {
            'me': blacklist('_password','sessions'),
            'mysessions': blacklist('_password')
@@ -116,9 +122,9 @@ class BaseUser(Document):
 
     def __init__(self, *args, **kwargs):
         kwargs['doc_type'] = 'User'
-        super(BaseUser, self).__init__(*args, **kwargs)
         if 'password' in kwargs and '_rev' not in kwargs:
-           self._password = self._salted_password(kwargs['password'])
+           kwargs['password'] = self._salted_password(kwargs['password'])
+        super(BaseUser, self).__init__(*args, **kwargs)
 
     def _get_password(self):
         return self._password
@@ -166,7 +172,8 @@ class BaseUser(Document):
 
     def _salted_password(self, passwd):
         s = "salt+{}".format(passwd)
-        return MD5Type.generate(s)
+        import hashlib
+        return hashlib.md5(s).hexdigest()
 
 
 @public

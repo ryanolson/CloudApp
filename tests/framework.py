@@ -18,7 +18,8 @@ You should have received a copy of the GNU General Public License
 along with CloudApp.  If not, see <http://www.gnu.org/licenses/>.
 """
 import unittest
-from cloudapp import Application, BaseUser
+from couchdb.tests import testutil
+from cloudapp import CloudApp, BaseUser
 from cloudapp.config import TestingConfig
 
 json_content_header = ('Content-Type', 'application/json')
@@ -28,33 +29,21 @@ def basic_auth_header(username, password):
     return ('Authorization', 'Basic ' + base64.b64encode(username + ":" + password))
 
 
-class TestingFramework(unittest.TestCase):
+class TestingFramework(testutil.TempDatabaseMixin, unittest.TestCase):
 
     class User(BaseUser):
         pass
 
     class MyTestingConfig(TestingConfig):
-        SERVER_NAME = 'osila.dev:8080'
         SECRET_KEY  = 'hi'
 
-    @property
-    def db(self):
-        with self.app.app_context():
-             return self.webapp.couch.db
-
     def setUp(self):
-        self.app = Application.flask("OsilaTests", self.MyTestingConfig)
-        self.webapp = Application(self.User, self.app)
+        super(TestingFramework,self).setUp()
+        self.app = CloudApp.flask("OsilaTests", self.MyTestingConfig)
+        self.webapp = CloudApp(self.User, app=self.app, server=self.server, db=self.db)
         self.testclient = self.app.test_client()
-        self.base_url = "http://api.{}".format(self.app.config['SERVER_NAME'])
+        self.base_url = "http://localhost"
         self.device_info = dict(device_info=dict(name='flask.test_client'))
 
-    def tearDown(self):
-        try:
-            server = self.webapp.couch.server
-            server.delete(self.webapp.couch.db_name)
-        except:
-            pass
-
     def testURL(self):
-        assert self.base_url == "http://api.osila.dev:8080"
+        assert self.base_url == "http://localhost"

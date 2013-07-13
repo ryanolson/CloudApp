@@ -21,7 +21,6 @@ from copy import copy
 from pprint import pprint
 from flask import current_app, session, g
 from flask.ext.principal import UserNeed, RoleNeed, AnonymousIdentity
-from flask.ext.couchdb import to_dict
 
 from cloudapp.permissions import valid_user
 from cloudapp.authentication.models import Session
@@ -40,7 +39,7 @@ def _load_user(user_id, identity):
 def _cache_identity(identity):
     if current_app.cache is None: return
     cached_identity = copy(identity)
-    cached_identity.user = to_dict(identity.user)
+    cached_identity.user = identity.user.serialize()
     current_app.cache.set(identity.name, cached_identity, timeout=600)
 
 

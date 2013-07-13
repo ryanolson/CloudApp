@@ -19,7 +19,6 @@ along with CloudApp.  If not, see <http://www.gnu.org/licenses/>.
 """
 from __future__ import absolute_import
 from flask import request, g, current_app, abort
-from flask.ext.couchdb import validate_instance, to_safe_dict
 from flask.ext.principal import Identity, AnonymousIdentity, identity_changed
 from cloudapp.api import Blueprint, Envelope
 from cloudapp.permissions import valid_user
@@ -76,6 +75,6 @@ def get_or_creat_api_key(user):
     identity_changed.send(current_app._get_current_object(), identity=Identity(token, auth_type='token'))
     envelope = Envelope(201)
     envelope.add_meta('token', token)
-    envelope.add_data( to_safe_dict( user, 'basic_info' ) )
+    envelope.add_data( user.serialize('basic_info') )
     return envelope.send()
 

@@ -19,7 +19,6 @@ along with CloudApp.  If not, see <http://www.gnu.org/licenses/>.
 """
 from functools import wraps
 from flask import g, session, Response, json, request, current_app, abort
-from flask.ext.couchdb import to_dict
 from flask.ext.principal import Identity, identity_changed, UserNeed
 
 from .models import validate_token

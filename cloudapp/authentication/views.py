@@ -20,9 +20,9 @@ along with CloudApp.  If not, see <http://www.gnu.org/licenses/>.
 from urlparse import urlparse, urljoin
 from flask import Blueprint, request, redirect, render_template, g, url_for, current_app
 from flask.ext.wtf import Form, HiddenField
-from flask.ext.couchdb import Model, StringType, EmailType
+from flask.ext.couchdb.schematics_document import Model, StringType, EmailType
 from flask.ext.principal import Identity, identity_changed
-from schematics.wtf import model_form
+#from schematics.wtf import model_form
 
 
 def is_safe_url(target):
@@ -57,29 +57,29 @@ class Login(Model):
     email = EmailType(required=True)
     password = StringType(min_length=6, max_length=32)
 
-BaseLoginForm = model_form(Login, base_class=RedirectForm, field_args=dict(password=dict(password=True)))
-
-class LoginForm(BaseLoginForm):
-
-    def __init__(self, *args, **kwargs):
-        super(LoginForm, self).__init__(*args, **kwargs)
-
-    def validate(self):
-        rv = super(LoginForm,self).validate()
-        if not rv:
-            return False
-
-        user = g.User.load(self.email.data)
-        if user is None:
-            self.email.errors.append('Unknown username')
-            return False
-
-        if not user.challenge_password(self.password.data):
-            self.password.errors.append('Invalid password')
-            return False
-
-        identity_changed.send(current_app._get_current_object(), identity=Identity(user.id, auth_type='web-token'))
-        return True
+# -wtf.model_form- BaseLoginForm = model_form(Login, base_class=RedirectForm, field_args=dict(password=dict(password=True)))
+# -wtf.model_form- 
+# -wtf.model_form- class LoginForm(BaseLoginForm):
+# -wtf.model_form- 
+# -wtf.model_form-     def __init__(self, *args, **kwargs):
+# -wtf.model_form-         super(LoginForm, self).__init__(*args, **kwargs)
+# -wtf.model_form- 
+# -wtf.model_form-     def validate(self):
+# -wtf.model_form-         rv = super(LoginForm,self).validate()
+# -wtf.model_form-         if not rv:
+# -wtf.model_form-             return False
+# -wtf.model_form- 
+# -wtf.model_form-         user = g.User.load(self.email.data)
+# -wtf.model_form-         if user is None:
+# -wtf.model_form-             self.email.errors.append('Unknown username')
+# -wtf.model_form-             return False
+# -wtf.model_form- 
+# -wtf.model_form-         if not user.challenge_password(self.password.data):
+# -wtf.model_form-             self.password.errors.append('Invalid password')
+# -wtf.model_form-             return False
+# -wtf.model_form- 
+# -wtf.model_form-         identity_changed.send(current_app._get_current_object(), identity=Identity(user.id, auth_type='web-token'))
+# -wtf.model_form-         return True
 
 #@auth.route('/login', methods=['POST','GET'])
 def login():

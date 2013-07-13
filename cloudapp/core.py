@@ -29,16 +29,23 @@ from cloudapp import public
 from datetime import timedelta
 
 from flask import Flask, Blueprint, g, render_template as flask_render_template
+from flask.ext.couchdb import CouchDB
 from flask.ext.bootstrap import Bootstrap
 
 EXTENSION_NAME = 'cloudapp'
 
-@public
-class Application(object):
+error_messages = {
+    'no secret key': 'CloudApp requires that a Flask secret key has been set.'
+}
 
-    def __init__(self, user, app=None, documents=[], users=[], **kwargs):
-        self.app   = app
-        self.user  = user
+@public
+class CloudApp(object):
+
+    def __init__(self, user, app=None, db=None, server=None, documents=[], users=[]):
+        self.db = db
+        self.app = app
+        self.user = user
+        self.server = server
         self.documents = documents
         self.couch = None
         self.default_users = users
@@ -46,23 +53,19 @@ class Application(object):
            self.init_app(app)
 
     def init_app(self, app):
+        assert app.secret_key is not None, error_messages['no secret key']
         if not hasattr(app, 'extensions'):
            app.extensions = dict()
         cloudapp = app.extensions.get(EXTENSION_NAME, None)
         if cloudapp is not None:
            raise RuntimeError('Multiple Flask-WebApplications loaded')
-
-        # initialize config defaults
         app.config['BOOTSTRAP_FONTAWESOME'] = True
-
         app.before_request(self._before_request)
-
         self._init_couch(app)
         self._init_cache(app)
         self._init_principal(app)
         self._init_blueprints(app)
         self._init_users(app)
-
         app.extensions[EXTENSION_NAME] = self
 
     @classmethod
@@ -74,35 +77,31 @@ class Application(object):
         app.permanent_session_lifetime = timedelta(minutes=60)
         app.debug = debug
 
-        if app.config.get('COUCHDB_DATABASE',None) is None:
-           app.config['COUCHDB_DATABASE'] = name.lower()
-
-        assert app.secret_key is not None, "flask config does not specify a secret key"
         return app
 
     def _init_couch(self, app):
-        from flask.ext.couchdb import CouchDBManager
-        couch = CouchDBManager(app,auto_sync=False)
+        if app.config.get('COUCHDB_SERVER', None) is None:
+           app.config['COUCHDB_SERVER'] = 'http://localhost:5984/'
+        if app.config.get('COUCHDB_DATABASE',None) is None:
+           app.config['COUCHDB_DATABASE'] = self.db.name if self.db else app.name.lower()
+
+        couch = CouchDB(app, self.server, self.db)
+        couch.connect_db(app)
         couch.add_document(self.user)
         for doc in self.documents:
             couch.add_document(doc)
+        couch.sync(app)
         self.couch = couch
 
     def _init_cache(self,app):
         cache = None
-        prefix=app.name.lower()
+        prefix = app.name.lower() + '_'
 
         try:
            from werkzeug.contrib.cache import RedisCache
            cache = RedisCache(key_prefix=prefix)
         except:
            RuntimeWarning("RedisCache not available")
-
-#       try:
-#          from werkzeug.contrib.cache import MemcachedCache
-#          cache = MemcachedCache(app.config['MEMCACHED_SERVERS'], key_prefix=prefix)
-#       except:
-#          RuntimeWarning("Memcached not available")
 
         if cache is not None:
            cache.clear()
