@@ -48,6 +48,7 @@ def _process_request_json():
     if request.data:
        try:
           g.json = json.loads(request.data)
+          print 'api process request data => json\n',g.json
        except:
           env = Envelope(400)
           env.add_meta('error_message','expected a valid json')

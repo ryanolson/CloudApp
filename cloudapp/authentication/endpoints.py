@@ -22,6 +22,7 @@ from flask import request, g, current_app, abort
 from flask.ext.principal import Identity, AnonymousIdentity, identity_changed
 from cloudapp.api import Blueprint, Envelope
 from cloudapp.permissions import valid_user
+from schematics.exceptions import ValidationError
 
 #rom cloudapp.authentication.decorators import requires_login
 from .decorators import requires_login
@@ -30,22 +31,34 @@ from .models import Session
 
 api = Blueprint('cloudapp_api', url_prefix='/auth' )
 
+@api.route('/test')
+def test():
+    return Envelope().send()
+
+@api.route('/secret')
+@requires_login
+def secret():
+    envelope = Envelope()
+    envelope.add_meta('secret', 'shhhhh')
+    return envelope.send()
+
 @api.route('/login',methods=['POST'])
 @requires_login
 def login():
+    print vars(g)
     return get_or_creat_api_key( g.user )
 
 @api.route('/signup', methods=['POST'])
 def signup():
-    if request.json is None: abort(400)
-    if 'user' not in request.json: abort(400)
-    if 'email_verified' in request.json['user']:
-       del request.json['user']['email_verified']
+    if g.json is None: abort(400)
+    if 'user' not in g.json: abort(400)
+    if 'email_verified' in g.json['user']:
+       del g.json['user']['email_verified']
     try:    
-       user = g.User.wrap(request.json['user'])
+       user = g.User(**g.json['user'])
        user.store()
        return get_or_creat_api_key( user )
-    except:
+    except ValidationError:
        abort(400)
 
 @api.route('/logout')
@@ -65,9 +78,12 @@ def getTokens():
     abort(400)
 
 def get_or_creat_api_key(user):
-    if request.json is None: abort(400)
-    if 'device_info' not in request.json: abort(400)
-    device_info = request.json['device_info']
+    print "1 - get_or_create_api_key"
+    if g.json is None: abort(400)
+    print "2 - get_or_create_api_key"
+    if 'device_info' not in g.json: abort(400)
+    print "3 - get_or_create_api_key"
+    device_info = g.json['device_info']
     verify_email = current_app.config.get('VERIFY_EMAIL', False)
     token = user.create_session(device_info, verify_email)
     assert token is not None
@@ -75,6 +91,6 @@ def get_or_creat_api_key(user):
     identity_changed.send(current_app._get_current_object(), identity=Identity(token, auth_type='token'))
     envelope = Envelope(201)
     envelope.add_meta('token', token)
-    envelope.add_data( user.serialize('basic_info') )
+    envelope.add_data( user.serialize(role='safe') )
     return envelope.send()
 

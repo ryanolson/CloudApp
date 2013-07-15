@@ -36,8 +36,7 @@ def load_user():
      should request a token by a GET to /auth/token with the basic HTTP client 
      authentication header set.
     """
-    if hasattr(g.identity, 'user') and g.identity.user is not None:
-       return
+    if hasattr(g.identity, 'user') and g.identity.user is not None: return
     token = dict(request.headers).get("X-Auth-Token", None)
     if token and validate_token(token):
        identity_changed.send(current_app._get_current_object(), identity=Identity(token, auth_type='api-key'))
@@ -47,9 +46,9 @@ def load_user():
 
 def _check_authentication(username, password):
     """ This function is called to check if a username password combination is valid. """
-    user = g.User.load(username)
-    if user:
-       return user.challenge_password(password)
+    g.user = g.User.load(username)
+    if g.user:
+       return g.user.challenge_password(password)
     return False
 
 def _send_authentication_challenge():

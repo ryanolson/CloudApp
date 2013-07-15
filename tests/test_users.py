@@ -12,7 +12,7 @@ from schematics.exceptions import (
 )
 import hashlib
 
-class UserTestCases(TestingFramework):
+class TestUser(TestingFramework):
 
     def testSessionCreation(self):
         # TODO - broken
@@ -52,26 +52,15 @@ class UserTestCases(TestingFramework):
         self.assertEqual(user.id, 'ryanolson@gmail.com')
 
     def testRoles(self):
-        # TODO - broken
-        return
         user = User(email='ryan.olson@gmail.com', password='secret')
         user.store(self.db)
         self.assertEqual(user.id, u'ryanolson@gmail.com')
         self.assertEqual(self.db[user.id][u'email'], u'ryan.olson@gmail.com')
-        json = json.dumps(user.serialize('mysessions'))
+        json = user.serialize(role='safe')
         assert 'password' not in json
         assert 'token' not in json
         assert 'email' in json
-        assert 'created_on' in json
         assert self.db[user.id]['password'] is not None
         u2 = User.load(self.db, user.id)
         self.assertTrue(u2.challenge_password('secret'))
 
-
-def suite():
-    suite = unittest.TestSuite()
-    suite.addTest(unittest.makeSuite(UserTestCases, 'test'))
-    return suite
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='suite')

@@ -69,7 +69,6 @@ class Session(Document):
     user_id = StringType(required=True)
     auth_type = StringType(choices=['web-token','api-token','facebook','google'])
     created_on = DateTimeType(default=datetime.datetime.utcnow)
-    device_info = DictType(StringType)
     class Options:
        serialize_when_none = False
        roles = {
@@ -103,8 +102,7 @@ class BaseUser(Document):
     class Options:
         serialize_when_none = False
         roles = {
-           'me': blacklist('_password','sessions'),
-           'mysessions': blacklist('_password')
+           'safe': blacklist('_password')
         }
 
     ##
@@ -120,11 +118,11 @@ class BaseUser(Document):
       }''',wrapper=Session._wrap_row)
 
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, **kwargs):
         kwargs['doc_type'] = 'User'
         if 'password' in kwargs and '_rev' not in kwargs:
-           kwargs['password'] = self._salted_password(kwargs['password'])
-        super(BaseUser, self).__init__(*args, **kwargs)
+           kwargs['password'] = self._salted_password(kwargs.pop('password'))
+        super(BaseUser, self).__init__(**kwargs)
 
     def _get_password(self):
         return self._password
@@ -135,7 +133,7 @@ class BaseUser(Document):
     password = property(_get_password, _set_password)
     
     def challenge_password(self,passwd):
-        if self.password == self._salted_password(passwd): return True
+        if self._password == self._salted_password(passwd): return True
         return False
 
     def create_session(self, device_info=None, verify_email=False, *args, **kwargs):
