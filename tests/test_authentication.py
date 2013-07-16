@@ -106,7 +106,7 @@ class AuthenticationTests(TestingFramework):
 
     def testInvalidLoginWithIncorrectPassword(self):
         self.setupUserAccounts()
-        rv = self.testclient.post('/api/v1/auth/login', 
+        rv = self.testclient.post('/api/v1/auth/login', content_type='application/json',
                   data=dict(device_info="flask.test_client"),
                   headers=[json_content_header, basic_auth_header("thesis@finish.it", "done")])
         assert '401' in rv.data
@@ -114,7 +114,7 @@ class AuthenticationTests(TestingFramework):
     def testInvalidLoginWithInvalidUsername(self):
         self.setupUserAccounts()
         rv = self.testclient.post('/api/v1/auth/login', 
-                  data=dict(device_info="flask.test_client"),
+                  data=dict(device_info="flask.test_client"), content_type='application/json',
                   headers=[json_content_header, basic_auth_header("thesis.coyle@finish.it", "done")])
         assert '401' in rv.data
 

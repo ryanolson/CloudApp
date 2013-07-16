@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with CloudApp.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import re, string, datetime, urllib, hashlib
+import re, string, datetime, urllib, hashlib, uuid
 from cloudapp import public
 from flask import current_app, g, session
 from flask.ext.principal import AnonymousIdentity
@@ -26,8 +26,9 @@ from flask.ext.principal import AnonymousIdentity
 from flask.ext.couchdb import ViewDefinition
 from flask.ext.couchdb.schematics_document import Document
 
+from schematics.models import Model
 from schematics.types import StringType, DateTimeType, UUIDType, EmailType, MD5Type, BooleanType
-from schematics.types.compound import ListType, DictType
+from schematics.types.compound import ListType, DictType, ModelType
 from schematics.serialize import blacklist, whitelist
 """
 BaseUser is the base class for a more general User class.  BaseUser
@@ -64,40 +65,49 @@ def _remove_dots_from_gmail_username(email):
        rv = "{0}@gmail.com".format(username)
     return rv
 
-@public
-class Session(Document):
-    user_id = StringType(required=True)
-    auth_type = StringType(choices=['web-token','api-token','facebook','google'])
-    created_on = DateTimeType(default=datetime.datetime.utcnow)
-    class Options:
-       serialize_when_none = False
-       roles = {
-          'mysessions': blacklist('token')
-       }
 
-    web_token = ViewDefinition('auth','web-token', '''\
-      function(doc) {
-        if(doc.doc_type == "Session" && doc.auth_type == 'web-token') {
-           emit(doc.user_id, doc);
-        }
-      ''')
+class APIKey(Model):
+    key = UUIDType(required=True)
+    secret = UUIDType(required=True)
 
-    @property
-    def token(self):
-        if self.id is None:
-           raise RuntimeError("Session Token (doc._id) is None")
-        return self.id
+#--class APIKey(Document):
+#--    user_id = StringType(required=True)
+#--    secret = UUIDType(required=True)
+#--    created_on = DateTimeType(default=datetime.datetime.utcnow)
+#--    
+#--    class Options:
+#--       serialize_when_none = False
+#--       roles = {
+#--          'safe': blacklist('secret')
+#--       }
+#--
+#--    web_token = ViewDefinition('auth','user_key', '''\
+#--      function(doc) {
+#--        if(doc.doc_type == "APIKey") {
+#--           emit(doc.user_id, doc);
+#--        }
+#--      ''')
+#--
+#--    def __init__(self, **kwargs):
+#--        if '_rev' not in kwargs:
+#--           kwargs['_id'] = uuid.uuid4().hex
+#--           kwargs['secret'] = uuid.uuid4()
+#--        super(APIKey,self).__init__(**kwargs)
+#--
+#--    @property
+#--    def key(self):
+#--        if self.id is None:
+#--           raise RuntimeError("Session Token (doc._id) is None")
+#--        return self.id
 
 @public
 class BaseUser(Document):
-
+    _password = MD5Type(required=True,serialized_name="password")
     email = EmailType(required=True)
     last_name = StringType()
     first_name = StringType()
     roles = ListType(StringType())
-    email_verified = BooleanType(default=False)
-    _password = MD5Type(required=True,serialized_name="password")
-    fb_token = StringType()
+    apikey = ModelType(APIKey)
 
     class Options:
         serialize_when_none = False
@@ -110,12 +120,14 @@ class BaseUser(Document):
     ##
     # doc.sessions.forEach(function (session) {
 
-    token = ViewDefinition('auth', 'token', '''\
+    token = ViewDefinition('auth', 'apikey', '''\
       function(doc) {
-        if(doc.doc_type == "Session") {
-          emit(doc._id, doc);
+        if(doc.doc_type == "User") {
+          if(doc.apikey) {
+             emit(doc.apikey.key, doc);
+          }
         }
-      }''',wrapper=Session._wrap_row)
+      }''')
 
 
     def __init__(self, **kwargs):
@@ -132,32 +144,14 @@ class BaseUser(Document):
 
     password = property(_get_password, _set_password)
     
+    def _salted_password(self, passwd):
+        s = "salt+{}".format(passwd)
+        import hashlib
+        return hashlib.md5(s).hexdigest()
+
     def challenge_password(self,passwd):
         if self._password == self._salted_password(passwd): return True
         return False
-
-    def create_session(self, device_info=None, verify_email=False, *args, **kwargs):
-        if self.id is None: return None
-        if not verify_email or (verify_email and self.email_verified):
-           session = Session(user_id=self.id, device_info=device_info).store()
-           if session is None:
-              raise RuntimeError("failed to create an authentication session")
-           return str(session.token)
-        return None
-
-    def gravatar_url(self,size=40,default=None):
-        if default is None:
-           default = 'mm'
-        gravatar_url = "http://www.gravatar.com/avatar/" + hashlib.md5(self.email.lower()).hexdigest() + "?"
-        gravatar_url += urllib.urlencode({'d':default, 's':str(size)})
-        return gravatar_url
-
-#   def remove_session(self, token):
-#       for s in range(len(self.sessions)):
-#           session = self.sessions[s]
-#           if str(session.token) == token:
-#              del self.sessions[s]
-#              self.store()
 
     @classmethod
     def load(cls, id, db=None):
@@ -168,23 +162,23 @@ class BaseUser(Document):
            self.id = _remove_dots_from_gmail_username(self.email)
         return super(BaseUser,self).store(db=db,validate=validate)
 
-    def _salted_password(self, passwd):
-        s = "salt+{}".format(passwd)
-        import hashlib
-        return hashlib.md5(s).hexdigest()
+    def get_or_create_apikey(self, **kwargs):
+        if self.apikey: return self.apikey
+        self.apikey = APIKey(key=uuid.uuid4(), secret=uuid.uuid4())
+        return self.apikey
 
+    def gravatar_url(self,size=40,default=None):
+        if default is None:
+           default = 'mm'
+        gravatar_url = "http://www.gravatar.com/avatar/" + hashlib.md5(self.email.lower()).hexdigest() + "?"
+        gravatar_url += urllib.urlencode({'d':default, 's':str(size)})
+        return gravatar_url
 
-@public
 def validate_token(token):
-    if token is None: return False
+    if token is None: raise RuntimeError("invalid token")
     if current_app.cache is not None:
        if current_app.cache.get(token) is not None:
-          return True 
-    auth_session = Session.load(token)
-    if auth_session:
-       return True
-    return False
-
+          pass
 
 @public
 def logout():

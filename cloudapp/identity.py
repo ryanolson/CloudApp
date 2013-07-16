@@ -23,7 +23,6 @@ from flask import current_app, session, g
 from flask.ext.principal import UserNeed, RoleNeed, AnonymousIdentity
 
 from cloudapp.permissions import valid_user
-from cloudapp.authentication.models import Session
 
 def _load_user(user_id, identity):
     user = g.User.load(user_id)
@@ -59,21 +58,22 @@ def on_load_identity(sender, identity):
     if current_app.cache is not None:
        stored_identity = current_app.cache.get(identity.id)
        if stored_identity is not None:
-          identity.user = g.User.wrap(stored_identity.user)
+          identity.user = g.User(**stored_identity.user)
           identity.provides = stored_identity.provides
-          if current_app.testing: session['loaded_from']='memcached'
+          if current_app.testing: session['loaded_from']='cache'
           return
     try:
-       if identity.auth_type == 'web-token':
+       if identity.auth_type == 'web':
           _load_user(identity.id, identity)
           _cache_identity(identity)
-       elif identity.auth_type == 'token':
-          auth_session = Session.load(identity.id)
-          if auth_session:
-             _load_user(auth_session.user_id, identity)
-             _cache_identity(identity)
-             if not session.permanent: session.permanent=True
-             if current_app.testing: session['loaded_from']='couchdb'
+          if current_app.testing: session['loaded_from']='couchdb'
+#      elif identity.auth_type == 'token':
+#         auth_session = Session.load(identity.id)
+#         if auth_session:
+#            _load_user(auth_session.user_id, identity)
+#            _cache_identity(identity)
+#            if not session.permanent: session.permanent=True
+#            if current_app.testing: session['loaded_from']='couchdb'
     except:
        g.identity = AnonymousIdentity()
        session.pop('identity.id',None)

@@ -81,7 +81,7 @@ class LoginForm(BaseLoginForm):
             self.password.errors.append('Invalid password')
             return False
 
-        identity_changed.send(current_app._get_current_object(), identity=Identity(user.id, auth_type='web-token'))
+        identity_changed.send(current_app._get_current_object(), identity=Identity(user.id, auth_type='web'))
         return True
 
 #@auth.route('/login', methods=['POST','GET'])

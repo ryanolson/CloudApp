@@ -26,8 +26,6 @@ from schematics.exceptions import ValidationError
 
 #rom cloudapp.authentication.decorators import requires_login
 from .decorators import requires_login
-#rom cloudapp.authentication.models import Session
-from .models import Session
 
 api = Blueprint('cloudapp_api', url_prefix='/auth' )
 
@@ -50,22 +48,22 @@ def login():
 
 @api.route('/signup', methods=['POST'])
 def signup():
-    if g.json is None: abort(400)
-    if 'user' not in g.json: abort(400)
-    if 'email_verified' in g.json['user']:
-       del g.json['user']['email_verified']
+    if g.json_data is None: abort(400)
+    if 'user' not in g.json_data: abort(400)
+    if 'email_verified' in g.json_data['user']:
+       del g.json_data['user']['email_verified']
     try:    
-       user = g.User(**g.json['user'])
+       user = g.User(**g.json_data['user'])
        user.store()
        return get_or_creat_api_key( user )
-    except ValidationError:
+    except ValidationError, e:
+       print e.messages
        abort(400)
+         
 
 @api.route('/logout')
 @valid_user.require(http_exception=403)
 def logout():
-    session = Session.load( g.identity.id )
-    g.couch.db.delete( session )
     if current_app.cache is not None:
        current_app.cache.delete( g.identity.id )
     g.user = None
@@ -78,12 +76,9 @@ def getTokens():
     abort(400)
 
 def get_or_creat_api_key(user):
-    print "1 - get_or_create_api_key"
-    if g.json is None: abort(400)
-    print "2 - get_or_create_api_key"
-    if 'device_info' not in g.json: abort(400)
-    print "3 - get_or_create_api_key"
-    device_info = g.json['device_info']
+    if g.json_data is None: abort(400)
+    if 'device_info' not in g.json_data: abort(400)
+    device_info = g.json_data['device_info']
     verify_email = current_app.config.get('VERIFY_EMAIL', False)
     token = user.create_session(device_info, verify_email)
     assert token is not None

@@ -41,15 +41,16 @@ def Blueprint(name, **kwargs):
             return _json_errorhandler(code)
     return bp
 
-
 def _process_request_json():
     from flask import request, json, g
-    g.json = None
+    g.json_data = None
     if request.data:
        try:
-          g.json = json.loads(request.data)
-          print 'api process request data => json\n',g.json
+          g.json_data = json.loads(request.data)
+          print 'api process request data => json\n',g.json_data
        except:
+          print "exception caught while processing request data"
+          print request.data
           env = Envelope(400)
           env.add_meta('error_message','expected a valid json')
           return env.send()
